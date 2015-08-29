@@ -1,13 +1,43 @@
 // // start slingin' some d3 here.
 
+var board = d3.select('svg');
+
+var scoreBoard = {
+  currentScore: 0,
+  highScore: 0,
+  collisions: 0,
+  collisionFlag: false,
+
+  currentUI:document.querySelector('.current span'),
+  highUI: document.querySelector('.high span'),
+  collisionUI: document.querySelector('.collisions span'),
+
+  setScores: function(){
+    this.currentScore ++;
+    if(this.currentScore > this.highScore){
+      this.highScore = this.currentScore;
+      this.highUI.innerHTML = this.highScore;
+    }
+
+    this.currentUI.innerHTML = this.currentScore;
+    
+  },
+  resetScore: function(){
+    this.currentScore = 0;
+    this.currentUI.innerHTML = this.currentScore;
+  },
+  updateCollisions: function(){
+    this.collisions++;
+    this.collisionUI.innerHTML = this.collisions;
+    this.collisionFlag = false;
+  }
+};
 
 var gameOptions = {
   enemyCount:30,
   enemyRadius: 10
 };
 
-
-var board = d3.select('svg');
 
 
 var makeEnemyData = function () {
@@ -57,12 +87,15 @@ var enemies = board.selectAll('circle.enemy')
   .attr('class', function(d){ return d.class});  
 
 var collisionCheck = function(enemyDOMElement) {
+
   var a = Math.pow(Math.abs(enemyDOMElement.attributes.cx.value - player.attr('cx')), 2);
   var b = Math.pow(Math.abs(enemyDOMElement.attributes.cy.value - player.attr('cy')), 2);
   var distance = Math.sqrt(a + b);
   if (distance < 20){
-    console.log("we have a collision!!!!")
+    scoreBoard.resetScore();
+    scoreBoard.collisonFlag = true;
   }
+
 };
 
 player.call(d3.behavior.drag().on('drag', function(d){
@@ -74,8 +107,6 @@ player.call(d3.behavior.drag().on('drag', function(d){
     return d3.event.y;
   });
 
-//  console.log(d.cx,d.cy);
-//  console.log(d3.event.x, d3.event.y);
 }));
 
 
@@ -88,6 +119,10 @@ var update = function() {
     .attr('cx', function(d){ return d.cx;})
     .attr('cy', function(d){ return d.cy;})
     .ease('bounce');
+
+  if(scoreBoard.collisonFlag===true){
+    scoreBoard.updateCollisions();
+  }
 };
 
 
@@ -100,6 +135,7 @@ setInterval(function(){
   enemies[0].forEach(function(enemyDOMElement) {
     collisionCheck.call(null, enemyDOMElement);
   });
+  scoreBoard.setScores();
 },10);
 
 
