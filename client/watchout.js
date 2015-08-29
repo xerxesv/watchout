@@ -34,7 +34,7 @@ var scoreBoard = {
 };
 
 var gameOptions = {
-  enemyCount:30,
+  enemyCount:15,
   enemyRadius: 10
 };
 
@@ -45,8 +45,8 @@ var makeEnemyData = function () {
   for(var i=0; i < gameOptions.enemyCount; i++) {
     enemyData.push({
       id: i,
-      cx:Math.random() * 600,
-      cy:Math.random() * 400,
+      cx:Math.random() * 800,
+      cy:Math.random() * 600,
       r:gameOptions.enemyRadius,
       color:'red',
       class: 'enemy'
@@ -59,8 +59,8 @@ var makeEnemyData = function () {
 
 var playerOptions = [{
   r:10,
-  cy:200,
-  cx:300,
+  cy:300,
+  cx:400,
   color:'yellow',
   class:'playerOptions'
 }];
@@ -79,19 +79,19 @@ var player = board.selectAll('circle.player')
 var enemies = board.selectAll('circle.enemy')
   .data(makeEnemyData())
   .enter()
-  .append('circle')
-  .attr('cx', function(d){ return d.cx;})
-  .attr('cy', function(d){ return d.cy;})
-  .attr('r', function(d){ return d.r;})
-  .attr('fill', function(d){ return d.color;})
-  .attr('class', function(d){ return d.class});  
+  .append('image')
+  .attr('x', function(d){ return d.cx;})
+  .attr('y', function(d){ return d.cy;})
+  .attr('width', 30)
+  .attr('height', 30)
+  .attr('xlink:href', 'asteroid.png')
 
 var collisionCheck = function(enemyDOMElement) {
 
-  var a = Math.pow(Math.abs(enemyDOMElement.attributes.cx.value - player.attr('cx')), 2);
-  var b = Math.pow(Math.abs(enemyDOMElement.attributes.cy.value - player.attr('cy')), 2);
+  var a = Math.pow(Math.abs(enemyDOMElement.attributes.x.value - player.attr('cx')), 2);
+  var b = Math.pow(Math.abs(enemyDOMElement.attributes.y.value - player.attr('cy')), 2);
   var distance = Math.sqrt(a + b);
-  if (distance < 20){
+  if (distance < 25){
     scoreBoard.resetScore();
     scoreBoard.collisonFlag = true;
   }
@@ -100,6 +100,12 @@ var collisionCheck = function(enemyDOMElement) {
 
 player.call(d3.behavior.drag().on('drag', function(d){
   
+  if(d3.event.y < (playerOptions[0].r) || d3.event.y > (600 - playerOptions[0].r)) {
+    return;
+  }
+  if(d3.event.x < 0 || d3.event.x > 800) {
+    return;
+  }
   player.attr('cx', function(d){
     return d3.event.x;
   })
@@ -111,14 +117,16 @@ player.call(d3.behavior.drag().on('drag', function(d){
 
 
 
+
+
 var update = function() {
   enemies
     .data(makeEnemyData(), function(d){ return d.id;})
     .transition()
-    .duration(1000)
-    .attr('cx', function(d){ return d.cx;})
-    .attr('cy', function(d){ return d.cy;})
-    .ease('bounce');
+    .duration(1500)
+    .attr('x', function(d){ return d.cx;})
+    .attr('y', function(d){ return d.cy;})
+    .ease('in');
 
   if(scoreBoard.collisonFlag===true){
     scoreBoard.updateCollisions();
@@ -137,6 +145,10 @@ setInterval(function(){
   });
   scoreBoard.setScores();
 },10);
+
+setInterval(function(){
+  throwShuriken();
+},8000);
 
 
 
